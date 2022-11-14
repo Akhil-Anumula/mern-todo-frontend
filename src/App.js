@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./App.css";
+import  {toast, ToastContainer} from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
+const URL = process.env.REACT_APP_SERVER_URL
 
 function App() {
   const [todos, setTodos] = useState([]);
@@ -11,26 +15,26 @@ function App() {
   const addItem = async (e) => {
     e.preventDefault();
     if (input === "") {
-      alert("Please Enter a valid todo");
-      return;
+      return toast.error("Input field cannot be empty");
     }
     try {
-      await axios.post("http://localhost:5500/todo", { item: input });
+      await axios.post(`${URL}/todo`, { item: input });
       setInput("");
+      toast.success("Todo added")
     }
-    catch (err) {
-      console.log(err);
+    catch (error) {
+      toast.error(error.message);
     }
   };
 
   useEffect(() => {
     const getTodos = async () => {
       try {
-        let allTodos = await axios.get("http://localhost:5500/todo");
+        let allTodos = await axios.get(`${URL}/todo`);
         setTodos(allTodos.data);
       }
-      catch (err) {
-        console.log(err);
+      catch (error) {
+        toast.error(error.message)
       }
     };
     getTodos();
@@ -38,10 +42,11 @@ function App() {
 
   const deleteTodo = async (id) => {
     try {
-      await axios.delete(`http://localhost:5500/todo/${id}`);
+      await axios.delete(`${URL}/todo/${id}`);
+      toast.error("Todo deleted");
     }
-    catch (err) {
-      console.log(err);
+    catch (error) {
+      toast.error(error.message)
     }
   };
 
@@ -70,14 +75,15 @@ function App() {
   const updateTodo = async (e) => {
     e.preventDefault();
     try {
-      await axios.put(`http://localhost:5500/todo/${updatingInput}`, {
+      await axios.put(`${URL}/todo/${updatingInput}`, {
         item: updatedTodo,
       });
       setUpdatedTodo("");
       setUpdatingInput("");
+      toast.success("Todo updated successfully");
     }
-    catch (err) {
-      console.log(err);
+    catch (error) {
+      toast.error(error.message)
     }
   };
 
@@ -101,8 +107,8 @@ function App() {
 
       <div className="todo-listItems">
 
-        {todos.map((todo) => (
-          <div className="todo-Item">
+        {todos.map((todo, index) => (
+          <div className="todo-Item" key={index}>
             {updatingInput === todo._id ? (
               updateInputForm()
             ) : (
@@ -131,6 +137,7 @@ function App() {
         ))}
 
       </div>
+      <ToastContainer/>
     </div>
   );
 }
